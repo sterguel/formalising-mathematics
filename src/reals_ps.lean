@@ -2,18 +2,26 @@ import tactic
 import data.real.basic
 import data.set
 
--- This stuff is from the reals sheets
+/--
+Definition for convergence of a sequence a n to a limit t.
+-/
 def tendsto (a : ℕ → ℝ) (t : ℝ) : Prop :=
 ∀ ε > 0, ∃ B : ℕ, ∀ n, B ≤ n → |a n - t| < ε
 
-
-theorem tendsto_def {a : ℕ → ℝ} {t : ℝ} :
+/--
+Lemma for rewriting tendsto without using the change tactic.
+-/
+lemma tendsto_def {a : ℕ → ℝ} {t : ℝ} :
   tendsto a t ↔ ∀ ε, 0 < ε → ∃ B : ℕ, ∀ n, B ≤ n → |a n - t| < ε :=
 begin
   refl
 end
 
--- This one has been modified to be an iff
+
+/--
+A sequence a n tends to t iff -a n tends to -t.
+This is a problem from the problem sheets converted to an iff.
+-/
 theorem tendsto_neg_iff {a : ℕ → ℝ} {t : ℝ} :tendsto a t ↔ tendsto (λ n, - a n) (-t) :=
 begin
   split,
@@ -48,3 +56,4 @@ begin
   ring_nf at hb_h,
   apply hb_h, exact i,
 end
+#lint

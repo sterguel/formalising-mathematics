@@ -3,24 +3,25 @@ import data.real.basic
 import data.set
 import reals_ps
 
-
+/--
+A sequence a n is monotone increasing iff each term is greater than or equal to the last.
+-/
 def monotone_increasing (a : ℕ → ℝ) : Prop :=
-∀(n : ℕ), a (n+1) ≥ a n
+∀(n : ℕ),  a n ≤ a (n+1)
 
-theorem monotone_increasing_def {a : ℕ → ℝ} :
-  monotone_increasing a ↔ ∀(n : ℕ), a (n+1) ≥ a n := by refl
+lemma monotone_increasing_def {a : ℕ → ℝ} :
+  monotone_increasing a ↔ ∀(n : ℕ),  a n ≤ a (n+1) := by refl
 
--- I realise now that defining it this way may not have been such a good idea.
+--The induction tactic won't start at n so we need to prove this lemma first to get what we want.
 lemma monotone_increasing_add {a : ℕ → ℝ}:
- monotone_increasing a → ∀(n : ℕ), ∀ (m : ℕ),a (m+n) ≥ a n :=
+ monotone_increasing a → ∀(n : ℕ), ∀ (m : ℕ),  a n ≤ a (m+n):=
 begin
   intro h,
   intros n m,
   induction m,
   rw zero_add,
-  norm_num,
   rw nat.succ_eq_one_add,
-  have h2: a ( (m_n + n) + 1) ≥ a (m_n + n),
+  have h2: a (m_n + n) ≤ a ( (m_n + n) + 1),
   rw monotone_increasing_def at h,
   specialize h (m_n + n),
   exact h,
@@ -29,8 +30,9 @@ begin
   linarith,
 end
 
-theorem monotone_increasing_ind {a : ℕ → ℝ}:
-monotone_increasing a ↔ ∀(n : ℕ), ∀ (m : ℕ), m ≥ n → a m ≥ a n :=
+--An equivalent definition of monotone increasing. We need both for the theorems later!
+lemma monotone_increasing_ind {a : ℕ → ℝ}:
+monotone_increasing a ↔ ∀(n : ℕ), ∀ (m : ℕ), n ≤ m → a n ≤ a m :=
 begin
   split,
   {
@@ -54,17 +56,41 @@ begin
   }
 end
 
+/--
+A sequence is monotone decreasing iff each term is less than or equal to the last.
+-/
 def monotone_decreasing (a : ℕ → ℝ) : Prop := 
   ∀(n : ℕ), a (n+1) ≤ a n
 
-theorem monotone_decreasing_def {a : ℕ → ℝ} :
-  monotone_increasing a ↔ ∀(n : ℕ), a (n+1) ≥ a n := by refl
+/-
+The corresponding lemma is not needed here since we don't directly prove the 
+monotone convergence theorem for decreasing sequences.
+-/
 
+/--
+A function f : ℕ → ℕ is strictly increasing if each f(x + 1) > f(x) for every x.
+-/
 def strictly_increasing (a : ℕ → ℕ) : Prop :=
-  ∀(n : ℕ), a (n + 1) > a n
+  ∀(n : ℕ), a n < a (n + 1)
 
+/--
+Given a sequence a n and an index i, a i is a peak of a n iff
+all following terms are smaller.
+-/
+def peak (a : ℕ → ℝ) (i : ℕ) : Prop:=
+  ∀(n : ℕ), i < n → a n < a i
 
+/--
+Takes a function f : ℕ → ℕ and an initial value i : ℕ and returns a function g : ℕ → ℕ such that
+g(n) = g^n(i)
+-/
+def recursive (f : ℕ → ℕ) (i : ℕ) : ℕ → ℕ
+| 0       :=  f i
+| (x + 1) :=  f (recursive x)
 
+/--
+A monotone increasing sequence that is bounded above converges to some limit.
+-/
 theorem bdd_inc_seq_converges {a : ℕ → ℝ} (hb: ∃(M:ℝ), ∀(n: ℕ), a n ≤ M) (hm : monotone_increasing a): ∃(l : ℝ), tendsto a l :=
 begin
   let S := set.range a,
@@ -97,6 +123,7 @@ begin
     use b,
     intro n,
     intro hbn,
+    --We use the other definition of monotone increasing here.
     have han_ab: a n ≥ a b,
     rw monotone_increasing_ind at hm,
     specialize hm b n,
@@ -115,7 +142,7 @@ begin
     change  t - eps/2 + -eps / 2 < a b at hxs_h,
     linarith,
   },
-  {exact hsb,}, --bounded above is a hypothesis, for some reason this comes after the main goal??
+  {exact hsb,}, --We have already proven that S is bounded above. For some reason this comes after the main goal.
   { --S is non empty
     use a 1,
     rw set.mem_range,
@@ -123,9 +150,13 @@ begin
   }
 end
 
-theorem bdd_dec_seq_converges {a : ℕ → ℝ} (hb: ∃(M:ℝ), ∀(n: ℕ), a n ≥ M) (hm : monotone_decreasing a): ∃(l : ℝ), tendsto a l :=
+/--
+A monotone decreasing sequence that is bounded below converges to some limit.
+-/
+theorem bdd_dec_seq_converges {a : ℕ → ℝ} (hb: ∃(M:ℝ), ∀(n: ℕ), M ≤ a n) (hm : monotone_decreasing a): ∃(l : ℝ), tendsto a l :=
 begin
-  -- recycle the proof and combine with the tendsto_neg (modified to be an iff so we can go both ways)
+  -- recycle the proof for increasing sequences 
+  -- and combine with tendsto_neg (modified to be an iff so we can go both ways)
   let b := (λ n, - a n),
   have hi: monotone_increasing b,
   intro n,
@@ -150,17 +181,13 @@ begin
   exact hnl,
 end
 
-def peak (a : ℕ → ℝ) (i : ℕ) : Prop:=
-  ∀(n : ℕ), n > i → a n < a i
-
-def recursive (f : ℕ → ℕ) (i : ℕ) : ℕ → ℕ
-| 0       :=  f i
-| (x + 1) :=  f (recursive x)
-
-
+/--
+A bounded sequence has a convergent subsequence.
+-/
 theorem bolzano_weierstrass {a : ℕ → ℝ} (hb: ∃(M:ℝ), ∀(n: ℕ), |a n| ≤ M) :
 ∃(n: ℕ → ℕ) (hn: strictly_increasing n) (l : ℝ), tendsto (λ t, a (n t)) l :=
 begin
+  --Either there are infinitely many peaks or finitely many peaks.
   by_cases (∀(t : ℕ), ∃(u: ℕ), u > t ∧ peak a u),
   {
     choose r hr using h,
@@ -192,6 +219,7 @@ begin
       cases hr,
       exact hr_right,
     },
+    --Prove monotonicity.
     have hsmi : monotone_decreasing (λ t, a (s t)),
     {
       intro n,
@@ -203,6 +231,7 @@ begin
       apply hpeak, exact hinc,
       linarith,
     },
+    --Plug in all the right functions and proofs to end the proof for this case.
     use s,
     split,
     exact hinc,
@@ -237,7 +266,7 @@ begin
       rw ←imp_iff_not_or,
       exact hp_h
     },
-    --More tinkering so that the hypothesis works for choose.
+    --More tinkering so that the hypothesis works with the choose tactic.
     cases h2 with p h3,
     have h4: ∀ (r : ℕ), ∃ (n : ℕ), r < n ∧ a (r + (p+1)) ≤ a (n+ (p+1)),
     intro r, specialize h3 (r + (p+1)),
@@ -253,6 +282,7 @@ begin
     split,
     rw lt_tsub_iff_right,
     exact h5_h_left,
+    --We haven't proven that h5_w - (p + 1) exists in ℕ.
     have h6: h5_w - (p + 1) + (p + 1) = h5_w,
     apply nat.sub_add_cancel,
     linarith [h5_h_left],
@@ -268,11 +298,10 @@ begin
       intro n,
       specialize hbs (c n),
       cases hbs,
-      change s n < s (n + 1),
       rw add_lt_add_iff_right,
       exact hbs_left,
     },
-    -- Prove that it's monotone to use the theorem at the start
+    -- Prove that it's monotone to apply the theorem.
     have hmi : monotone_increasing (λ n, a (s n)),
     {
       intro n,
@@ -293,4 +322,5 @@ begin
     exact hb_h,
     exact hmi,
   }
-end 
+end
+#lint
