@@ -82,7 +82,7 @@ def peak (a : ℕ → ℝ) (i : ℕ) : Prop:=
 
 /--
 Takes a function f : ℕ → ℕ and an initial value i : ℕ and returns a function g : ℕ → ℕ such that
-g(n) = g^n(i)
+g(n) = g^(n+1)(i)
 -/
 def recursive (f : ℕ → ℕ) (i : ℕ) : ℕ → ℕ
 | 0       :=  f i
@@ -305,7 +305,6 @@ begin
     have hmi : monotone_increasing (λ n, a (s n)),
     {
       intro n,
-      change a (c n + (p + 1)) ≤ a (c (n + 1) + (p + 1)),
       specialize hbs (c n),
       cases hbs,
       exact hbs_right,
