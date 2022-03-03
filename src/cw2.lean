@@ -2,13 +2,18 @@ import tactic
 import data.set.basic
 
 
+/--
+An ideal of R consists of a nonempty subset of R which is closed under addition, additive inverses, 
+and multiplication by elements of R.
+-/
+@[nolint has_inhabited_instance]
 structure myideal (R : Type) [comm_ring R] :=
   (iset : set R)
   (not_empty : iset.nonempty)
   (r_mul_mem' {x r}: x ∈ iset → r * x ∈ iset)
   (add_mem' {x y} : x ∈ iset → y ∈ iset → (x + y) ∈ iset)
   (neg_mem' {x} : x ∈ iset → -x ∈ iset)
-
+  
 attribute [ext] myideal
 
 namespace myideal
@@ -33,9 +38,15 @@ end myideal
 
 variables {R : Type} [comm_ring R]
 
+/--
+An integral domain has no zero divisors.
+-/
 def is_integral_domain (R: Type) [comm_ring R]: Prop :=
   ∀ (x y : R), x * y = 0 → x = 0 ∨ y = 0
 
+/--
+A principal ideal is of the form aR for some a ∈ R
+-/
 def principal_ideal (x : R) : myideal R :=
 { 
   iset := { i : R | ∃(v:R), i = x * v},
@@ -70,7 +81,9 @@ def principal_ideal (x : R) : myideal R :=
     ring,
   end 
 }
-
+/--
+An integral domain is a PID iff every ideal is principal.
+-/
 def is_pid (R: Type) [comm_ring R]: Prop :=
   is_integral_domain R ∧ ∀(I : myideal R), ∃ (x : R), I = principal_ideal x
 
@@ -102,7 +115,9 @@ begin
   exact hx,
 end
 
---The sum of two ideals is an ideal.
+/--
+The sum of two ideals is also an ideal.
+-/
 def sum_ideal (I J : myideal R) : myideal R :=
 { iset := {r : R | ∃ (i ∈ I) (j ∈ J), r = i + j},
   not_empty := begin
@@ -174,7 +189,10 @@ def sum_ideal (I J : myideal R) : myideal R :=
 
 notation I ` + ` J := sum_ideal I J
 
-
+/--
+An element r of R is irreducible iff it is not a unit and 
+for all factorisations x * y = r, x or y is a unit.
+-/
 def irreducible (r : R) : Prop :=
   ¬is_unit r ∧ ∀(x y : R), x * y = r → is_unit x ∨ is_unit y
 
@@ -217,12 +235,17 @@ begin
     exact h3,
 end
 
-
+/--
+  For some a and b, a divides b iff there is a c ∈ R such that a * c = b
+-/
 def divisible (a b: R) : Prop :=
   ∃ (c : R), b = a * c
 
 notation a ` \ ` b := divisible a b
 
+/--
+  Two elements a b are associates iff a = b * c for some unit c.
+-/
 def associates (a b : R) : Prop :=
   ∃ (c : R), is_unit c ∧ b = a * c
 
@@ -307,15 +330,25 @@ begin
   exact h1,
 end
 
-
+/--
+In a dividing sequence, each term is divisible by the next term.
+-/
 def dividing_sequence (f : ℕ → R) : Prop :=
 ∀ (n : ℕ),  f (n + 1) \ f n
 
+/--
+A unique factorisation domain (UFD) is an integral domain such that:
+  All infinite dividing sequences 'stabilise': past some n ∈ ℕ, all terms are associate.#check
+  All irreducible elements are prime.
+-/
 def is_ufd  (R : Type) [comm_ring R] : Prop :=
   is_integral_domain R ∧ (∀(f : ℕ → R), dividing_sequence f → 
   ∃ (m : ℕ), ∀(q : ℕ), m ≤ q → f q ~ f (q + 1) ) ∧
    (∀ (p: R), irreducible p →∀ (a b: R), p \ (a*b) → p \ a ∨ p \ b )
 
+/--
+In an ascending ideal chain, each ideal is contained in the next one.
+-/
 def asc_ideal_chain (i : ℕ → myideal R) : Prop :=
   ∀ (n : ℕ), i n ⊆ i (n + 1) 
 
