@@ -114,5 +114,6 @@ begin
     cases h;
     rw h; norm_num,
   }
-  
 end
+
+#lint

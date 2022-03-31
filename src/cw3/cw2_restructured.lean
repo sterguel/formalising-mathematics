@@ -589,6 +589,7 @@ begin
   }
 end
 namespace pid
+@[priority 100]
 instance (P : Type) [pid P]: ufd P:=
 { 
   hseq := begin
@@ -621,3 +622,4 @@ instance (P : Type) [pid P]: ufd P:=
   hpi := pid_irreducible_is_prime P
 }
 end pid
+#lint

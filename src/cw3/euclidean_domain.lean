@@ -1,9 +1,12 @@
-import cw2_restructured
-import utils3
+import cw3.cw2_restructured
+import cw3.utils
 -- Euclidean domain stuff for CW3
 -- Definition and also a proof that every Euclidean domain is a PID.
 -- This takes ages to compile for some reason
 
+/--
+A Euclidean domain is an integral domain with a nonnegative norm function and Euclidean division (with this norm).
+-/
 class my_euclidean_domain (E: Type) extends integral_domain E :=
 (norm : E → ℤ )
 (norm_nonneg: ∀(a : E), 0 ≤ norm a )
@@ -12,6 +15,7 @@ class my_euclidean_domain (E: Type) extends integral_domain E :=
 (hnorm : ∀ (a b : E), b ≠ 0 → ∃ (q r : E), a = b * q + r ∧ norm(r) < norm(b))
 
 namespace my_euclidean_domain
+@[priority 100]
 instance (E: Type) [my_euclidean_domain E]: pid E :=
 {
   hpid :=
@@ -134,3 +138,5 @@ instance (E: Type) [my_euclidean_domain E]: pid E :=
   end
 }
 end my_euclidean_domain
+
+#lint

@@ -1,11 +1,12 @@
-import cw2_restructured
+import cw3.cw2_restructured
 
 /-
   This is part of coursework 3!
+  It's ended up being mostly useless because I didn't have enough time for the separating powers trick.
 -/
 open myring
 
-/-
+/--
 Two elements of a ring are coprime if only units divide them both.
 -/
 def coprime {R : Type} [comm_ring R] (a b : R) : Prop := ∀ (d : R), d \ a → d \ b → is_unit d
@@ -39,7 +40,7 @@ begin
   rw [hkc, hkb],
 end
 
-/-
+/--
 Bezout's identity for PIDs
 I thought this might have been useful but it turns out it's not.
 I'm leaving it in because it might be interesting
@@ -107,7 +108,7 @@ begin
   rw hr,
 end
 
-/-
+/--
 Euclid's Lemma for PIDs.
 I thought this might have been useful but it turns out it's not.
 I'm leaving it in because it might be interesting
@@ -130,6 +131,7 @@ begin
   ring,
 end
 
+/-
 variables {R : Type} [ufd R] 
 
 lemma associates_equiv : equivalence (@associates R _ ) :=
@@ -180,7 +182,7 @@ begin
 end 
 
 
-/-
+
 def S (R: Type) [ufd R] : setoid R :=
 { r := associates,
   iseqv := associates_equiv }
@@ -197,7 +199,7 @@ begin
 end
 -/
 
-/-
+/--
 The separating powers trick for UFDs
 
 Not enough time to do this :(
@@ -207,3 +209,4 @@ theorem separating_powers_trick {R : Type} [ufd R] {p a b : R} {n : ℕ} (hcop :
 begin
   sorry
 end
+#lint

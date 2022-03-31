@@ -1,9 +1,13 @@
 import tactic
-import cw3_euclidean_domain
-import ufd
+import cw3.euclidean_domain
+import cw3.ufd
 import data.int.parity
 import algebra.order.archimedean
 
+/--
+The type of Gaussian Integers ℤ[i]
+-/
+@[nolint has_inhabited_instance]
 structure gaussian_ints :=
 (re : ℤ)
 (im : ℤ)
@@ -13,23 +17,31 @@ attribute [ext] gaussian_ints
 namespace gaussian_ints
 
 
-
+/--
+Component wise addition
+-/
 def add (x y : gaussian_ints) : gaussian_ints :=
 ⟨x.re + y.re, x.im + y.im ⟩
 instance : has_add gaussian_ints :=
 { add := add }
 
+/--
+Complex multiplication
+-/
 def prod (x y : gaussian_ints) : gaussian_ints := 
 ⟨ x.re * y.re - x.im * y.im , x.re * y.im + x.im * y.re ⟩ 
 instance : has_mul gaussian_ints :=
 { mul := prod }
-@[simp] lemma mul_def (x y : gaussian_ints) : 
+lemma mul_def (x y : gaussian_ints) : 
 x * y = ⟨ x.re * y.re - x.im * y.im , x.re * y.im + x.im * y.re ⟩ := rfl
-@[simp] lemma mul_re (x y : gaussian_ints):
+lemma mul_re (x y : gaussian_ints):
 (x*y).re = x.re * y.re - x.im * y.im := rfl
-@[simp] lemma mul_im (x y : gaussian_ints):
+lemma mul_im (x y : gaussian_ints):
 (x*y).im = x.re * y.im + x.im * y.re:= rfl
 
+/--
+Convert an integer x to x + 0i
+-/
 def convert_int (x : ℤ) : gaussian_ints := ⟨x , (0 : ℤ) ⟩ 
 
 instance : has_zero gaussian_ints :=
@@ -37,25 +49,37 @@ instance : has_zero gaussian_ints :=
 instance : has_one gaussian_ints :=
 {one := convert_int (1:ℤ)}
 
+/--
+Complex negation (component-wise)
+-/
 def neg (x : gaussian_ints) : gaussian_ints := ⟨-x.re, -x.im⟩
 instance : has_neg gaussian_ints :=
 { neg := neg }
 
+/--
+Component wise subtraction
+-/
 def sub (x y : gaussian_ints) : gaussian_ints :=
 ⟨x.re - y.re, x.im - y.im ⟩
 instance : has_sub gaussian_ints :=
 { sub := sub }
 
+/--
+Complex conjugation
+-/
 def conj (x : gaussian_ints) : gaussian_ints := ⟨ x.re, -x.im ⟩
 
+@[nolint doc_blame]
 def nsmul : ℕ → gaussian_ints → gaussian_ints
 | 0 x := (0 : gaussian_ints)
 | (n + 1) x := x +(nsmul n x)
 
+@[nolint doc_blame]
 def zsmul : ℤ → gaussian_ints → gaussian_ints
 | (int.of_nat a) x := nsmul a x
 | -[1+ a] x := -(nsmul (a + 1) x)
 
+@[nolint doc_blame]
 def npow : ℕ → gaussian_ints → gaussian_ints
 | 0 x := 1
 | (n+1) x := x * (npow n x)
@@ -89,7 +113,9 @@ begin
   }
 end
 
-
+/-
+The Gaussian integers ℤ[i] are a ring.
+-/
 instance : comm_ring gaussian_ints :=
 { add := add,
   add_assoc := begin
@@ -248,6 +274,9 @@ instance : comm_ring gaussian_ints :=
   end 
 }
 
+/--
+Norm function for Gaussian integers. Defined by Re(x)^2 + Im(x)^2 rather than x * x.conj
+-/
 def norm (x : gaussian_ints) : ℤ := x.re ^ 2 + x.im ^ 2
 
 lemma norm_nonneg : ∀ (x : gaussian_ints), 0 ≤ norm x :=
@@ -427,18 +456,21 @@ lemma i_sq_minus_one : (⟨0, 1⟩: gaussian_ints)^2 = (⟨-1, 0⟩ : gaussian_i
 begin
   rw (by ring: (⟨0, 1⟩:gaussian_ints)^2 = (⟨0, 1⟩ :gaussian_ints) * (⟨0, 1⟩ :gaussian_ints)),
   ext,
-  norm_num,
-  norm_num,
+  norm_num [mul_re, mul_def, mul_im],
+  norm_num [mul_re, mul_def, mul_im],
 end
 
 lemma i_cub_minus_i : (⟨0, 1⟩: gaussian_ints)^3 = (⟨0, -1⟩ : gaussian_ints) :=
 begin
   rw (by ring: (⟨0, 1⟩:gaussian_ints)^3 = (⟨0, 1⟩ :gaussian_ints) * (⟨0, 1⟩ :gaussian_ints) * (⟨0, 1⟩ :gaussian_ints)),
   ext,
-  norm_num,
-  norm_num,
+  norm_num [mul_re, mul_def, mul_im],
+  norm_num [mul_re, mul_def, mul_im],
 end
 
+/-
+The ring ℤ[i] is a Euclidean domain.
+-/
 instance : my_euclidean_domain gaussian_ints :=
 {
   hzd := begin
@@ -771,3 +803,5 @@ begin
     norm_num,
   }
 end
+
+#lint
